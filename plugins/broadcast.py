@@ -43,6 +43,8 @@ async def broadcast_messages(client: Client, source_chat_id: int, message_ids: l
                 for batch in batches:
                     # forward the whole batch in a single API call
                     await client.forward_messages(chat_id=target, from_chat_id=source_chat_id, message_ids=batch)
+    if PER_BATCH_DELAY and PER_BATCH_DELAY > 0:
+        await asyncio.sleep(PER_BATCH_DELAY)
                 success += 1
                 return True
             except FloodWait as e:
@@ -53,6 +55,8 @@ async def broadcast_messages(client: Client, source_chat_id: int, message_ids: l
                 try:
                     for batch in batches:
                         await client.forward_messages(chat_id=target, from_chat_id=source_chat_id, message_ids=batch)
+    if PER_BATCH_DELAY and PER_BATCH_DELAY > 0:
+        await asyncio.sleep(PER_BATCH_DELAY)
                     success += 1
                     return True
                 except Exception as e2:
