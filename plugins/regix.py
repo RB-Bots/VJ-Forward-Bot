@@ -744,3 +744,67 @@ async def complete_time(total_files, files_per_minute=30):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+
+
+# ============================================================================
+# 🚀 Added: Smart Fast Auto Forward System (by ChatGPT)
+# Automatically adjusts batch size and delay to maximize speed safely
+# ============================================================================
+
+import random
+from pyrogram import errors
+
+FAST_MIN_SLEEP = 1        # Minimum sleep (fastest)
+FAST_MAX_SLEEP = 3        # Max sleep (when floodwait happens)
+FAST_BATCH_MIN = 10       # Start batch size
+FAST_BATCH_MAX = 15       # Max batch size
+
+async def smart_fast_forward(bot, source_chat_id, target_chat_id, messages):
+    total = len(messages)
+    success, fail = 0, 0
+    batch_size = FAST_BATCH_MIN
+    sleep_time = FAST_MIN_SLEEP
+
+    print(f"🚀 Smart Fast Forward Started — {total} messages total")
+
+    for i in range(0, total, batch_size):
+        batch = messages[i:i + batch_size]
+        try:
+            await asyncio.gather(*[
+                bot.copy_message(
+                    chat_id=target_chat_id,
+                    from_chat_id=source_chat_id,
+                    message_id=msg.id
+                ) for msg in batch
+            ])
+            success += len(batch)
+            print(f"✅ Batch {i//batch_size+1}: {len(batch)} messages sent — total {success}")
+
+            # 🔁 Auto adjust (speed boost logic)
+            if sleep_time > FAST_MIN_SLEEP:
+                sleep_time -= 0.2
+            if batch_size < FAST_BATCH_MAX:
+                batch_size += 1
+
+            await asyncio.sleep(sleep_time)
+
+        except errors.FloodWait as e:
+            print(f"⚠️ FloodWait {e.value}s — slowing down...")
+            await asyncio.sleep(e.value + 2)
+
+            # Auto slow down on flood
+            batch_size = max(FAST_BATCH_MIN, batch_size - 3)
+            sleep_time = min(FAST_MAX_SLEEP, sleep_time + 1)
+
+        except Exception as ex:
+            print(f"❌ Error in fast forward: {ex}")
+            fail += len(batch)
+            await asyncio.sleep(2)
+
+    print(f"🎯 Smart Fast Forward Completed ✅ {success} success, ❌ {fail} failed")
+
+# ============================================================================
+# You can call this using:
+# await smart_fast_forward(client, source_chat_id, target_chat_id, messages)
+# ============================================================================
