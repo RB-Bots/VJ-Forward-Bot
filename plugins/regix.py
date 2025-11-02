@@ -808,3 +808,23 @@ async def smart_fast_forward(bot, source_chat_id, target_chat_id, messages):
 # You can call this using:
 # await smart_fast_forward(client, source_chat_id, target_chat_id, messages)
 # ============================================================================
+
+# ============================================================================
+# ⚙️ FloodSafe Fix Patch — Keeps your original logic intact
+# ============================================================================
+
+import random
+from pyrogram.errors import FloodWait
+
+async def safe_edit_progress(user, msg, sts, pling):
+    """Progress edit with flood protection and random delay."""
+    if pling % 80 == 0:  # हर 80 messages पर ही update होगा
+        try:
+            await msg.edit_text(f"ᴘʀᴏɢʀᴇssɪɴɢ... {pling}", reply_markup=sts)
+            await asyncio.sleep(random.uniform(8, 12))  # random pause to reduce FloodWaits
+        except FloodWait as e:
+            wait_time = min(e.value, 20)
+            print(f"⚠️ Edit FloodWait {wait_time}s")
+            await asyncio.sleep(wait_time)
+        except Exception as ex:
+            print(f"Edit progress error: {ex}")
